@@ -1,0 +1,2 @@
+[uWSGI] getting INI configuration from /etc/uwsgi/sites/microfinance.ini
+[uwsgi-static] added mapping for /static => /home/vagrant/source/microfinance/static

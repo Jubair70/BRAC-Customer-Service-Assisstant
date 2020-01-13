@@ -1,0 +1,328 @@
+{% extends 'base.html' %}
+{% load tz %}
+{% block additional-headers %}
+    <style >
+    .data-table-container table {
+        clear: both;
+        display: table !important;
+        overflow-x: auto;
+        width: 98% !important;
+    }
+
+    .table th, .table td {
+        border: 1px solid #dddddd !important;
+        text-align:center;
+    }
+
+    .btn {
+    -moz-border-radius: 7px !important;
+    -webkit-border-radius: 7px !important;
+    border-radius: 7px !important;
+    }
+    </style>
+{% endblock %}
+
+{% block content %}
+<section id="data-view">
+    <!--<span class="span12">-->
+        <div class="data-table-container table table-striped table-hover">
+              {% if user.is_authenticated %}
+              <h1>{{page_header}}</h1>
+                {% if success %}
+                <div class="alert alert-success" role="alert">
+                    Your Request was successful!
+                </div>
+                {% endif %}
+                {% if locker %}
+                <div class="alert alert-success" role="alert">
+                    This Request is under process by {{locker}}
+                </div>
+                {% endif %}
+                {% if unlock %}
+                <div class="alert alert-success" role="alert">
+                    This Request is now open
+                </div>
+                {% endif %}
+
+                {% if admin %}
+                    <form action="/usermodule/register">
+                        <input type="submit" class="btn btn-success" value="Register User">
+                    </form>
+                    <br>
+                {% endif %}
+                <form class="form-inline">
+                    <div class="form-group">
+                    <label for="sel1">Problem Type</label>
+                    <select class="form-control" id="problem_type">
+                      <option value="custom">Select a Problem Type</option>
+                      <option value="BAR">BAR</option>
+                        <option value="PIN RESET">PIN Reset</option>
+                      <option value="Transaction Confirmation">Transaction Confirmation</option>
+                      <option value="Unbar">Unbar</option>
+                    </select>
+                    </div>
+                    <div class="form-group">
+                    <label for="sel1">Branch</label>
+                    <select class="form-control" id="branch">
+                    <option value="custom">Select a Branch</option>
+                    {% for branch in branches %}
+                    <option value="{{branch.id}}">{{branch.name}}</option>
+                    {% endfor %}
+                    </select>
+                    </div>
+                    <div class="form-group">
+                    <label for="sel1">Status</label>
+                    <select class="form-control" id="status">
+                      <option value="custom">Select a Status</option>
+                      <option value="Executed">Executed</option>
+                      <option value="Not Executed">Not Executed</option>
+                       <option value="Escalated">Escalated</option>
+                        <option value="Pending">Pending</option>
+                    </select>
+                    </div>
+                    {% comment %}
+                        
+                    <div class="form-group">
+                    <input id="datepicker1" class="datepicker">
+                    <input id="datepicker2" class="datepicker">
+                    </div>
+                    {% endcomment %}
+                    <div class="form-group">
+                    <label>Date Range</label>
+                    <div class="input-group input-daterange">
+                        <input type="text" id="datepicker1" class="datepicker" >
+                        <span class="input-group-addon">to</span>
+                        <input type="text" id="datepicker2" class="datepicker" >
+                    </div>
+                    </div>
+                    <div class="form-group">
+                        <input type="submit" style="position:relative;left:10px;top:8px;" class="btn btn-lg btn-primary" onclick="filterDownload(event);" name="submit" value="Search" />
+                    </div>
+                </form>
+                <br>
+                <div id="complain_table_container">
+                <table id="complain_table" border="1" class="table">
+                  <thead>
+                  <tr>
+                    <th>Ticket ID</th>
+                    <th>Request Date & Time</th>
+                    <!--<th>Time</th>-->
+                    <th>Account No.</th>
+                    <th>Service Type</th>
+                    <th>Status</th>
+                    <th>Transaction ID</th>
+		            <th>Transaction Date & Time</th>
+                    <!--<th>View</th> -->
+                  </tr>
+                  </thead>
+                  <tbody>
+                {% for complain in complains %}
+                {% if complain.execution_status == 'New'%}
+                  <tr class="warning">
+                {% elif complain.execution_status == 'Read'%}
+                  <tr class="active">
+                {% elif complain.execution_status == 'Executed'%}
+                  <tr class="success">
+                {% elif complain.execution_status == 'Not Executed'%}
+                  <tr class="danger">
+                {% else %}
+                  <tr>
+                {% endif %}
+                    <td>{{complain.pin.usermoduleprofile.branch.branch_id}}{{complain.id|stringformat:"05d"}}</td>
+                    <td>
+{% localtime off %}
+{{complain.received_time|date:"D d M Y H:i"}}
+{% endlocaltime %}
+</td>
+                    {% comment %}
+                        <td>{{complain.account_no}}</td>
+                    {% endcomment %}
+                    <td><a href="/project/view-complain/{{complain.id}}">{{complain.account_no}}</a></td>
+                    <td>{{complain.service_type}}</td>
+                    <td>{{complain.execution_status}}</td>
+                    {% if complain.service_type == "Transaction Confirmation" %}
+                    <td>{{complain.transaction_id}}</td>
+                    <td>{{complain.transaction_date_time|date:"D d M Y H:i"}}</td>
+                    {% else %}
+                    <td></td>
+		    <td></td>
+                    {% endif %}
+                    {% comment %}
+                    <td><a href="/project/view-complain/{{complain.id}}"><i class="fa fa-pencil-square-o"></i></a></td>
+                    {% endcomment %}
+                  </tr>
+                {% endfor %}
+                </tbody>
+                </table>
+                </div>
+              {% else %}
+                You are not not logged in please <a href="/usermodule/login/">login</a>
+              {% endif %}
+              <div style="clear: both;"></div>
+        </div>
+        <div id="client-side-filter"></div>
+        <div style="float:left">
+            <div id="main"></div>
+        </div>
+</section>
+{% endblock %}
+
+{% block additional-javascript %}
+<script type="text/javascript">
+(function(){
+    {% if curr_user_role != 'bKash CS Agent' %}
+
+        $('#datepicker1').attr('disabled', false);
+        $('#datepicker2').attr('disabled', false);
+
+     {% endif %}
+
+    $('#datepicker1').datepicker({
+        endDate:'0d',
+        format: 'yyyy-mm-dd',
+        todayHighlight:true
+    });
+    $('#datepicker2').datepicker({
+        endDate:'0d',
+        format: 'yyyy-mm-dd',
+        todayHighlight:true
+    });
+    var oneWeekAgo = new Date();
+    var today = oneWeekAgo.getFullYear() + "-" + (oneWeekAgo.getMonth()+1) + "-" + oneWeekAgo.getDate();
+    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+    $("#datepicker1").datepicker("update", oneWeekAgo);
+    $("#datepicker2").datepicker("update", today);
+})();
+$(document).ready(function(){
+    table = $('#complain_table').DataTable({
+        //"aaSorting": [],
+	"columns": [
+	{"name": "Ticket ID", "orderable": false},
+	{"name": "Request Date & Time", "orderable": false},
+	{"name": "Account No.", "orderable": false},
+	{"name": "Service Type", "orderable": false},
+	{"name": "Status", "orderable": false},
+	{"name": "Transaction ID", "orderable": false},
+	{"name": "Transaction Date & Time", "orderable": false}
+	],
+	"stateSave": true,
+        "pageLength": 25
+    });
+
+});
+// $(document).on('change', '#complain_table_container', function() {
+//   $('#complain_table').DataTable({
+//         "pageLength": 25
+//     });
+// });
+// $('#complain_table_container').change(function() {
+//     $('#complain_table').DataTable({});
+// })
+
+function filterDownload(e)
+    {
+        e.preventDefault();
+        var problem_type = $('#problem_type').val();
+        var branch = $('#branch').val();
+        var status = $('#status').val();
+        var start = $('#datepicker1').val();
+        var end = $('#datepicker2').val();
+
+        color_class = '';
+        if (status == 'New') {
+            color_class = "warning";
+        }else if (status == 'Read') {
+            color_class = "active";
+        }else if (status == 'Executed') {
+            color_class = "success";
+        }else if (status == 'Not Executed') {
+            color_class = "danger";
+        }
+
+
+        if (!start || !end) {
+          alert("Both Dates must have value")
+        }
+        end =end + " 23:59:59";
+
+        var order = 'asc';
+        if ("{{page_header}}" == 'New Requests'){
+            order = 'asc';
+        }else {
+            order = 'desc';
+        }
+        //if (!(problem_type == 'custom' && branch == 'custom' &&  status == 'custom') && !(!start || !end) ) {
+        if(start && end){
+            $.ajax({
+                type: "GET",
+                url:"/project/complain-filter-list/",
+                data: {problem_type: problem_type, branch:branch, status:status, order:order, start:start, end:end},
+                success: function(response){
+                    var table_html = '<table border="1" id="complain_table" class="table"><thead><tr>' +
+                                      '<th>Ticket ID</th>' +
+                                      '<th>Request Date & Time</th>' +
+                                      //'<th>Time</th>' +
+                                      '<th>Account No.</th>' +
+                                      '<th>Service Type</th>' +
+                                      '<th>Status</th>' +
+                                      '<th>Transaction ID</th>' +
+				      '<th>Transaction Date & Time</th>' +
+                                      // '<th>View</th>' +
+                                    '</tr></thead><tbody>';
+                    if (response.length > 0){
+                        response.forEach(function(option) {
+
+			if (option.status == 'New') {
+			    color_class = "warning";
+			}else if (option.status == 'Read') {
+			    color_class = "active";
+			}else if (option.status == 'Executed') {
+			    color_class = "success";
+			}else if (option.status == 'Not Executed') {
+			    color_class = "danger";
+			}
+
+			var row = '<tr class="'+ color_class +'">'+
+					'<td>'+option.serial+'</td>'+
+					'<td>'+option.date+'</td>'+
+					'<td><a href="/project/view-complain/'+ option.view +'">'+option.account_no+'</a></td>'+
+					'<td>'+option.service_type+'</td>'+
+					'<td>'+option.status+'</td>'+
+					'<td>'+option.transaction_id+'</td>'+
+					'<td>'+option.tdate+'</td>'+
+				  '</tr>';
+
+			table_html += row ;
+		   });
+
+                        table_html += '</tbody></table>' ;
+                        table.destroy();
+                        //alert(table_html);
+
+                        $("#complain_table_container").empty();
+                        $("#complain_table_container").append(table_html);
+                        table = $('#complain_table').DataTable({
+				"columns": [
+				{"name": "Ticket ID", "orderable": false},
+				{"name": "Request Date", "orderable": false},
+				{"name": "Account No.", "orderable": false},
+				{"name": "Service Type", "orderable": false},
+				{"name": "Status", "orderable": false},
+				{"name": "Transaction ID", "orderable": false},
+				{"name": "Transaction Date", "orderable": false}
+				],
+				"stateSave": true,
+				"pageLength": 25
+                        });
+                    }else{
+                        $("#complain_table_container").empty();
+                    }
+                }
+,                error: function(response){
+                    console.log("Error Occured");
+                }
+            }); // end-ajax
+        }
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+{% block additional-headers %}
+    <style >
+    .data-table-container table {
+        clear: both;
+        display: table !important;
+        overflow-x: auto;
+        width: 98% !important;
+    }
+
+    .table th, .table td {
+        border: 1px solid #dddddd !important;
+        text-align:center;
+    }
+    </style>
+{% endblock %}
+
+{% block content %}
+<section id="data-view">
+    <!--<span class="span12">-->
+        <div class="data-table-container table table-striped table-hover">
+              {% if user.is_authenticated %}
+              <h1>Task List</h1>
+                {% if admin %}
+                    <form action="/project/add-task/">
+                        <input type="submit" class="btn btn-success" value="Add Task">
+                    </form>
+                    <br>
+                {% endif %}
+                <table border="1" class="table">
+                  <tr>
+                    <th>Task Name</th>
+                    <th>Edit</th>
+                    <th>Delete</th>
+                  </tr>
+                {% for task in tasks %}
+                  <tr>
+                    <td>{{task.name}}</td>
+                    <td><a href="/project/edit-task/{{task.id}}"><i class="fa fa-pencil-square-o"></i></a></td>
+                    <td style="text-align:center"><a href="#" data-href="/project/delete/{{task.id}}" data-toggle="modal" data-target="#confirm-delete" class="delete-user-item" ><i class="fa fa-trash-o"></i></a></td>
+                  </tr>
+                {% endfor %}
+                </table>
+              {% else %}
+                You are not not logged in please <a href="/usermodule/login/">login</a>
+              {% endif %}
+              <div style="clear: both;"></div>
+        </div>
+        <div id="client-side-filter"></div>
+        <div style="float:left">    
+            <div id="main"></div>
+        </div>
+</section>
+
+<div class="modal fade" id="confirm-delete" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+        
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title" id="myModalLabel">Confirm Delete</h4>
+            </div>
+        
+            <div class="modal-body">
+                <p>You are about to delete a item, this procedure is irreversible.</p>
+                <p>Do you want to proceed?</p>
+                <p class="debug-url"></p>
+            </div>
+            
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                <a href="#" class="btn btn-danger btn-ok">Delete</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block additional-javascript %}
+<script>
+    $('.delete-user-item').on('click', function(e) {
+        var criteria_id = $(this).attr("data-href");
+        $('.btn-ok').attr("href",criteria_id);
+    });
+</script>
+{% endblock %}

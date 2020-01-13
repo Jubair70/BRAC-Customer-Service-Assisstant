@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% block content %}
+    <section id="data-view">
+            <h1>Global Notification</h1>
+            {% if registered %}
+            <div class="alert alert-success" role="alert">
+                Thank you for registering!
+            </div>
+        
+            <form action="/usermodule/">
+                <input type="submit" class="btn btn-success" value="Return to Administration">
+            </form>
+            {% else %}
+                    
+
+        <span class="span12">
+            <div class="data-table-container table table-striped table-hover">
+            
+                <form role="form" id="complain_form" method="post" action="/project/send-global-message/">
+
+                    {% csrf_token %}
+                    {{ form.as_table }}
+                    <br>
+                    <input type="submit" class="btn btn-primary btn-lg" name="submit" value="Send" />
+                    
+                </form>
+            
+                {% endif %}
+                <div style="clear: both;"></div>
+            </div>
+        </span>
+    </section>
+{% endblock %}
+
+{% block additional-javascript %}
+{% endblock %}
+
+{% block additional-headers %}
+    <style >
+    .data-table-container table {
+        clear: both;
+        display: table !important;
+        overflow-x: auto;
+        width: 98% !important;
+    }
+
+    .highlight { background-color: #D9EDF7; }
+
+    .table th, .table td {
+        border: 1px solid #dddddd !important;
+    }
+
+    tr:hover {
+        background-color: #ffff99;
+    }
+
+    </style>
+    
+{% endblock %}

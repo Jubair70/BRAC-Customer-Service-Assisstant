@@ -1,0 +1,233 @@
+{% extends 'base.html' %}
+{% block additional-headers %}
+    <style >
+    .data-table-container table {
+        clear: both;
+        display: table !important;
+        overflow-x: auto;
+        width: 98% !important;
+    }
+
+    .table th {
+        border: 1px solid #dddddd !important;
+        text-align:center;
+    }
+    .table td{
+        border: 1px solid #dddddd !important;
+        text-align:left;   
+    }
+    </style>
+{% endblock %}
+
+{% block content %}
+<section id="data-view">
+    <!--<span class="span12">-->
+        <div class="row">
+              {% if user.is_authenticated %}
+              <h1>{{page_header}}</h1>
+                {% if admin %}
+                    <form action="/usermodule/register">
+                        <input type="submit" class="btn btn-success" value="Register User">
+                    </form>
+                    <br>
+                {% endif %}
+                <form id="report_form" method="POST" class="form-inline" action="/project/report/agents-performance">
+                    {% csrf_token %}
+                    <div class="form-group">
+                    <label>Date Range</label>
+                    <div class="input-group input-daterange">
+                        <input type="text" id="datepicker1" name="start" class="datepicker" >
+                        <span class="input-group-addon">to</span>
+                        <input type="text" id="datepicker2" name="end" class="datepicker" >
+                    </div>
+                    </div>
+		{% if curr_user_role != 'bKash CS Agent' %}
+                    <div class="form-group">
+                        <label>Agent</label>
+                        <select class="form-control" id="agent_id" name="agent_id">
+                          <option value="custom">Select an Agent</option>
+                          {% for agent in userlist %}
+                          <option value="{{agent.user.id}}">{{agent.user.username}}</option>
+                          {% endfor %}
+                        </select>
+                    </div>
+		{% endif %}
+                    <div class="form-group">
+                        <input type="hidden" name="export" value="export">
+                        <input type="submit" style="position:relative;left:10px;top:8px;" class="btn btn-lg btn-primary" onclick="filterDownload(event);" name="submit" value="Search" />
+                        <input type="submit" style="position:relative;left:10px;top:8px;" class="btn btn-lg btn-primary" name="export_trigger" value="Export" />
+                    </div>
+                </form>  
+                <br>
+                <div id="report_container">
+                <table border="1" class="table" id="report_table">
+                   <thead>
+                  <tr>
+
+                    <th>Ticket ID</th>
+                    <th>Request Date & Time</th>
+                    <th>Execution Date & Time</th>
+                    <th>Account No.</th>
+                    <th>Service Type</th>
+                    <th>Execution Status (Executed/not Executed)</th>
+                    <th>Executed by</th>
+                    <th>Remarks of bKash CS Agent</th>
+                  </tr>
+                    </thead>
+                    <tbody>
+                {% for data in data_list %}
+
+                  <tr>
+
+                    <td>{{data.Ticket_ID}}</td>
+                    <td>{{data.Request_Date}}</td>
+                    <td>{{data.Execution_Date}}</td>
+                    <td>{{data.account_no}}</td>
+                    <td>{{data.service_type}}</td>
+                    <td>{{data.execution_status}}</td>
+                    <td>{{data.Executed_by}}</td>
+                    <td>{{data.remarks_of_bkash_cs}}</td>
+                  </tr>
+                {% endfor %}
+                </tbody>
+                </table>
+                </div>
+              {% else %}
+                You are not not logged in please <a href="/usermodule/login/">login</a>
+              {% endif %}
+              <div style="clear: both;"></div>
+        </div>
+        <div id="client-side-filter"></div>
+        <div style="float:left">    
+            <div id="main"></div>
+        </div>
+</section>
+{% endblock %}
+
+{% block additional-javascript %}
+<script type="text/javascript">
+$(document).ready(function(){
+    {% if curr_user_role == 'bKash CS Agent' %}
+       var dateObj = moment();
+	var prevDateObj = moment().subtract(7,'d');
+
+
+   {% else %}
+    var dateObj = moment();
+	var prevDateObj =0;
+ {% endif %}
+	//console.log(prevDateObj)
+
+        function cb(obj) {
+            $('#datepicker1').val(obj.format('YYYY-MM-DD'));
+        }
+
+        function cb2(obj) {
+            $('#datepicker2').val(obj.format('YYYY-MM-DD'));
+        }
+
+        $('#datepicker1').daterangepicker({
+            singleDatePicker: true,
+            showDropdowns: true,
+            locale: {
+                format: 'YYYY-MM-DD'
+            },
+
+              minDate:prevDateObj,
+        });
+
+        $('#datepicker2').daterangepicker({
+            singleDatePicker: true,
+            showDropdowns: true,
+            locale: {
+                format: 'YYYY-MM-DD'
+            },
+
+        });
+
+        cb(prevDateObj);
+        cb2(dateObj);
+
+
+        table = $('#report_table').DataTable({
+        "pageLength": 25,
+	"searching": true,
+"columns": [
+	{"name": "Ticket ID", "orderable": false},
+	{"name": "Request Date & Time", "orderable": false},
+	{"name": "Execution Date & Time", "orderable": false},
+	{"name": "Account No.", "orderable": false},
+	{"name": "Service Type", "orderable": false},
+    {"name": "Execution Status (Executed/not Executed)", "orderable": false},
+	{"name": "Executed by", "orderable": false},
+	{"name": "Remarks of bKash CS Agent", "orderable": false}
+
+	]
+    });
+
+});
+
+function filterDownload(e)
+    {
+        e.preventDefault();
+        var start = $('#datepicker1').val();
+        var end = $('#datepicker2').val();
+        var agent_id = 'custom';
+	{% if curr_user_role != 'bKash CS Agent' %}
+	   agent_id = $('#agent_id').val();
+	{% endif %}
+        color_class = '';
+        if (!start || !end) {
+          alert("Both Dates must have value")
+        }
+        var order = 'asc';
+        
+        if (start && end ) {
+	    //start = start + ' 00:00:00';
+	    //end = end + ' 23:59:59';
+            $.ajax({
+                type: "POST",
+                url:"/project/report/agents-performance",
+                data: {start:start, end:end, agent_id:agent_id, csrfmiddlewaretoken: '{{ csrf_token }}'},
+                success: function(response){
+                    var table_html = '<table border="1" id="report_table" class="table"><thead><tr>' +
+                                      '<th>Ticket ID</th>' +
+                                      '<th>Request Date & Time</th>' +
+                                      '<th>Execution Date & Time</th>' +
+                                      '<th>Account No.</th>' +
+                                      '<th>Service Type</th>' +
+                                      '<th>Execution Status (Executed/not Executed)</th>' +
+                                      '<th>Executed by</th>' +
+                                      '<th>Remarks of bKash CS Agent</th>' +
+                                    '</tr></thead><tbody>';
+                    if (response.length > 0){
+                        response.forEach(function(option) {
+                            var row = '<tr>'+
+                                      '<td>'+option.Ticket_ID+'</td>' +
+                                      '<td>'+option.Request_Date+'</td>' +
+                                      '<td>'+option.Execution_Date+'</td>' +
+                                      '<td>'+option.account_no+'</td>' +
+                                      '<td>'+option.service_type+'</td>' +
+                                      '<td>'+option.execution_status+'</td>' +
+                                      '<td>'+option.Executed_by+'</td>' +
+                                      '<td>'+option.remarks_of_bkash_cs+'</td>' +
+                                      '</tr>';
+                            table_html += row ;   
+                        });
+                        table_html += '</tbody></table>' ;
+                        // table.destroy();
+                        $("#report_container").empty();
+                        $("#report_container").append(table_html);
+                    }else{
+                        $("#report_container").empty();
+                    }
+                }
+,               error: function(response){
+                    console.log("Error Occured");
+                }
+            }); // end-ajax
+        }
+    }
+</script>
+
+{% endblock %}

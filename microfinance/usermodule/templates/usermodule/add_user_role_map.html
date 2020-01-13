@@ -1,0 +1,134 @@
+{% extends 'base.html' %}
+{% load app_filters %}
+{% block additional-headers %}
+    <style >
+        .data-table-container table {
+            clear: both;
+            display: table !important;
+            overflow-x: auto;
+            width: 98% !important;
+        }
+
+        .highlight { background-color: #D9EDF7; }
+
+        .table th, .table td {
+            border: 1px solid #dddddd !important;
+        }
+    </style>    
+{% endblock %}
+
+{% block additional-javascript %}
+<!-- <script type="text/javascript" src="/static/js/organization_access.js"></script> -->
+{% endblock %}
+
+{% block content %}
+    <section id="data-view">
+    <h1>User-Role Management</h1>
+        
+            <table border="1" class="table">
+              <tr>
+                <th style="text-align:center">Username</th>
+                {% for role in roles %}
+                <th style="text-align:center">{{role}}</th>
+                {% endfor%}
+              </tr>
+
+               <form id="menu_form" method="post" action="/usermodule/adjust-user-role-map/{{id}}/">
+
+                {% csrf_token %}
+                {{new_formset.management_form}}
+                {% for user_role_form in new_formset %}
+                <tr>
+                <td style="text-align:center">
+                {{ user_role_form.user.errors }}
+                {{ user_role_form.user }}
+                <b>{{ user_role_form.initial.username|capfirst }}</b>
+                </td>
+                {% for choice in user_role_form.role.field.choices %}
+                <td style="text-align:center">    
+                        <label for="">
+                        {% if choice.0|get_checked:user_role_form.initial.role %}
+                        <input type="checkbox" name="role-{{forloop.parentloop.counter}}" value="{{choice.0}}" checked="checked">
+                        {% else %}
+                        <input type="checkbox" name="role-{{forloop.parentloop.counter}}" value="{{choice.0}}">
+                        {% endif %}  
+                        {# {{choice.1}} #}
+                        </label>
+                </td>    
+                {% endfor %}
+                </tr>
+                {% endfor %}
+
+                    
+              
+            </table>
+
+
+                        {% comment %}
+    <section id="data-view">
+        <h1>Role Management</h1>
+        <span class="span12">
+            <div class="data-table-container table table-striped table-hover">
+                    <form id="menu_form" method="post" action="/usermodule/add-user-role-map/">
+
+                        {% csrf_token %}
+                        <div class="fieldWrapper">
+                            {{ user_role_form.user.errors }}
+                            {{ user_role_form.user.label_tag }}
+                            {{ user_role_form.user }}
+                            {{ user_role_form.field.value}} 
+
+                        </div>
+
+                        
+
+                        {% for choice in user_role_form.role.field.choices %}
+                            
+                                <label for="">
+                                {% if choice.0|get_checked:user_role_form.initial.role %}
+                                <input type="checkbox" name="role" value="{{choice.0}}" checked="checked">
+                                {% else %}
+                                <input type="checkbox" name="role" value="{{choice.0}}">
+                                {% endif %}  
+                                {{choice.1}}
+                                </label>
+                            
+                        {% endfor %}
+                        
+                        {{new_formset.management_form}}
+                        {% for user_role_form in new_formset %}
+                            <div class="fieldWrapper">
+                            {{ user_role_form.user.errors }}
+                           
+                            {{ user_role_form.user }}
+                            
+
+                        </div>
+                        <b>{{ user_role_form.initial.username|capfirst }}</b>
+                        
+
+                        {% for choice in user_role_form.role.field.choices %}
+                            
+                                <label for="">
+                                {% if choice.0|get_checked:user_role_form.initial.role %}
+                                <input type="checkbox" name="role-{{forloop.parentloop.counter}}" value="{{choice.0}}" checked="checked">
+                                {% else %}
+                                <input type="checkbox" name="role-{{forloop.parentloop.counter}}" value="{{choice.0}}">
+                                {% endif %}  
+                                {{choice.1}}
+                                </label>
+                            
+                        {% endfor %}
+                        {% endfor %}
+
+                        <br>
+                        {% endcomment %}
+                        <!-- Provide a button to click to submit the form. -->
+                        <input type="submit" class="btn btn-primary btn-lg" name="submit" value="Save" />
+                    </form>
+                
+                <div style="clear: both;"></div>
+        </span>
+
+    </section>
+{% endblock %}

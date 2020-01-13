@@ -1,0 +1,34 @@
+
+{% load i18n %}
+
+{% block additional-headers %}
+<style type="text/css">
+    .rectangle {
+        position: absolute;
+        border: 4px solid black;
+    }
+</style>
+<div class="sub-header-bar">
+  
+</div>
+
+{% endblock %}
+
+{% block content %}
+    <body>
+        <h1>Rectangle</h1>
+        <div id="canvas"></div>
+        <div id="erora">aaaa</div>
+    </body>
+{% endblock %}
+
+{% block javascript %}
+    
+    <script type="text/javascript" src="/static/js/jquery.min.js"></script>
+    <script type="text/javascript" src="/static/bower_components/underscore/underscore-min.js"></script>
+    <script type="text/javascript" src="/static/bower_components/backbone/backbone-min.js"></script>
+    <script type="text/javascript" src="/static/bower_components/backbone-pageable/lib/backbone-pageable.min.js"></script>
+    <script type="text/javascript">
+    </script>
+    <script type="text/javascript" src="/static/js/rectangles.js"></script>
+{% endblock %}

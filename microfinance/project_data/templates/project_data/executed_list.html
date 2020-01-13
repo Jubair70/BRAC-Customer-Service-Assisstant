@@ -1,0 +1,447 @@
+{% extends 'base.html' %}
+{% load tz %}
+{% block additional-headers %}
+    <link rel="stylesheet" type="text/css" href="/static/plugins/bootstrap-toastr/toastr.min.css"/>
+    <style>
+        .data-table-container table {
+            clear: both;
+            display: table !important;
+            overflow-x: auto;
+            width: 100% !important;
+        }
+
+        .table th, .table td {
+            border: 1px solid #dddddd !important;
+            text-align: center;
+        }
+
+        .btn {
+            -moz-border-radius: 7px !important;
+            -webkit-border-radius: 7px !important;
+            border-radius: 7px !important;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <section id="data-view">
+        <!--<span class="span12">-->
+        <div class="data-table-container table table-striped table-hover">
+            {% if user.is_authenticated %}
+                <h1>{{ page_header }}</h1>
+
+                <div class="row">
+                <div class="col-md-6">
+                         <label>Request Date Range</label>
+                        <div class="input-group input-daterange">
+                            <input type="text" id="datepicker1" class="datepicker" >
+                            <span class="input-group-addon">to</span>
+                            <input type="text" id="datepicker2" class="datepicker" >
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="sel1">Problem Type</label>
+                        <select class="form-control" id="problem_type">
+                            <option value="%">Select a Problem Type</option>
+                            <option value="Bar">BAR</option>
+                            <option value="Transaction Confirmation">Transaction Confirmation</option>
+                            <option value="Pin Reset">Pin Reset</option>
+                            <option value="Unbar">Unbar</option>
+                            <option value="New Registration">New Registration</option>
+                            <option value="Information Update">Information Update</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="sel1">Branch</label>
+                        <select class="form-control" id="branch">
+                            <option value="%">Select a Branch</option>
+                            {% for branch in branches %}
+                                <option value="{{ branch.id }}">{{ branch.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                <div class="col-md-3">
+                    <label for="sel1">Status</label>
+                        <select class="form-control" id="execution_status">
+                            <option value="%">Select a Status</option>
+                            <option value="Solved">Solved</option>
+                            <option value="Closed">Closed</option>
+                            <option value="Correction Needed">Correction Needed</option>
+                        </select>
+                </div>
+                <div class="col-md-3">
+                        <button style="position:relative;top:25px;" class="btn btn-md btn-primary"
+                               id="generate_report" name="submit" value="">Search</button>
+                    </div>
+                </div>
+                <br>
+                <div class="row">
+                    <div class="col-md-12">
+                        <table class="table" id="cnt_table"><!-- class="table"-->
+                        <thead>
+                        <tr><th>Correction Needed</th>
+                            <th>Solved</th>
+                            <th>Closed</th>
+                            <th>Total</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+
+                        </tbody>
+                    </table>
+                    </div>
+                </div>
+                <br>
+                <div class="row">
+                     <div class="col-md-12">
+                    <table id="complain_table" class="table "><!-- class="table"-->
+                        <thead>
+                        <tr>
+                            <th>Ticket ID</th>
+                            <th>Request Date & Time</th>
+                            <th>Account No.</th>
+                            <th>Service Type</th>
+                            <th>Status</th>
+                            <th>SLA</th>
+                            <th>Transaction ID</th>
+                            <th>Transaction Date & Time</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+
+                        </tbody>
+                    </table>
+                </div>
+                </div>
+
+            {% else %}
+                You are not not logged in please <a href="/usermodule/login/">login</a>
+            {% endif %}
+            <div style="clear: both;"></div>
+        </div>
+        <div id="client-side-filter"></div>
+        <div style="float:left">
+            <div id="main"></div>
+        </div>
+    </section>
+{% endblock %}
+
+{% block additional-javascript %}
+    <script src="/static/plugins/bootstrap-toastr/toastr.min.js"></script>
+    <script type="text/javascript">
+        toastr.options = {
+            "closeButton": true,
+            "debug": false,
+            "positionClass": "toast-bottom-right",
+            "onclick": null,
+            "showDuration": "1000",
+            "hideDuration": "1000",
+            "timeOut": "5000",
+            "extendedTimeOut": "1000",
+            "showEasing": "swing",
+            "hideEasing": "linear",
+            "showMethod": "fadeIn",
+            "hideMethod": "fadeOut"
+        }
+
+
+        var last_id = {{ last_id }};
+        (function () {
+             {% if curr_user_role != 'bKash CS Agent' %}
+
+        $('#datepicker1').attr('disabled', false);
+        $('#datepicker2').attr('disabled', false);
+
+     {% endif %}
+
+            $('#datepicker1').datepicker({
+                endDate: '0d',
+                format: 'yyyy-mm-dd',
+                todayHighlight: true
+            });
+            $('#datepicker2').datepicker({
+                endDate: '0d',
+                format: 'yyyy-mm-dd',
+                todayHighlight: true
+            });
+            var oneWeekAgo = new Date();
+            var today = oneWeekAgo.getFullYear() + "-" + (oneWeekAgo.getMonth() + 1) + "-" + oneWeekAgo.getDate();
+            oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+            $("#datepicker1").datepicker("update", today);
+            $("#datepicker2").datepicker("update", today);
+        })();
+
+
+        $(document).ready(function () {
+            table = $('#complain_table').DataTable({"scrollX": true, "ordering": true
+                //"aaSorting": [],
+{#                destroy: true,#}
+{#                "processing": true,#}
+{#                "serverSide": false,#}
+{#                "ajax": {#}
+{#                    "url": "/project/getNewRequests/",#}
+{#                    "dataSrc": ""#}
+{#                },#}
+{#                "fnRowCallback": function (nRow, aData, iDisplayIndex, iDisplayIndexFull) {#}
+{#                    #}
+{#                    if (aData[3] == "New") {#}
+{#                        $('td', nRow).parent().addClass('warning');#}
+{#                    }#}
+{#                    else if (aData[3] == "Read") {#}
+{#                        $('td', nRow).parent().addClass('active');#}
+{#                    }#}
+{#                    else if (aData[3] == "Executed") {#}
+{#                        $('td', nRow).parent().addClass('success');#}
+{#                    }#}
+{#                    else if (aData[3] == "Not Executed") {#}
+{#                        $('td', nRow).parent().addClass('danger');#}
+{#                    }#}
+{##}
+{#                    if (aData[2]) {#}
+{#                        $('td', nRow).parent().find('td').eq(2).html('<a href="/project/view-complain/' + aData[7] + '" >' + aData[2] + '</a>');#}
+{#                    }#}
+{##}
+{##}
+{#                },#}
+{#                "columns": [#}
+{#                    {"name": "Ticket ID", "orderable": false},#}
+{#                    {"name": "Request Date & Time", "orderable": false},#}
+{#                    {"name": "Account No.", "orderable": false},#}
+{#                    {"name": "Service Type", "orderable": false},#}
+{#                    {"name": "Status", "orderable": false},#}
+{#                    {"name": "Transaction ID", "orderable": false},#}
+{#                    {"name": "Transaction Date & Time", "orderable": false}#}
+{#                ],#}
+{#                "stateSave": true,#}
+{#                "pageLength": 25#}
+            });
+            cnt_tbl = $('#cnt_table').DataTable({"scrollX": true, "ordering": true,"searching": false});
+
+            setInterval(function () {
+                $.ajax({
+                    url: '/project/get-last-id/',
+                    type: "GET",
+                    success: function (data) {
+                        if (data > last_id) {
+                            var audio = new Audio('/static/audio/just-like-magic.mp3');
+                            audio.play();
+{#                            table.ajax.reload();#}
+                            $('#generate_report').trigger('click');
+                            last_id = data;
+                            toastr.info('New request Has been added!');
+                        }
+                    }
+                });
+
+            }, 50000);
+            $('#generate_report').trigger('click');
+
+        });
+        // $(document).on('change', '#complain_table_container', function() {
+        //   $('#complain_table').DataTable({
+        //         "pageLength": 25
+        //     });
+        // });
+        // $('#complain_table_container').change(function() {
+        //     $('#complain_table').DataTable({});
+        // })
+
+        function filterDownload(e) {
+            e.preventDefault();
+            var problem_type = $('#problem_type').val();
+            var branch = $('#branch').val();
+            var status = $('#status').val();
+            //var status = "Pending";
+            var start = $('#datepicker1').val();
+            var end = $('#datepicker2').val();
+
+            color_class = '';
+            if (status == 'New') {
+                color_class = "warning";
+            } else if (status == 'Read') {
+                color_class = "active";
+            } else if (status == 'Executed') {
+                color_class = "success";
+            } else if (status == 'Not Executed') {
+                color_class = "danger";
+            }
+
+
+            if (!start || !end) {
+                alert("Both Dates must have value")
+            }
+            end = end + " 23:59:59";
+
+            var order = 'asc';
+            if ("{{page_header}}" == 'Executed Requests') {
+                order = 'asc';
+            } else {
+                order = 'desc';
+            }
+            //if (!(problem_type == 'custom' && branch == 'custom' &&  status == 'custom') && !(!start || !end) ) {
+            if (start && end) {
+                $.ajax({
+                    type: "GET",
+                    url: "/project/complain-filter-list/",
+                    data: {
+                        problem_type: problem_type,
+                        branch: branch,
+                        status: status,
+                        order: order,
+                        start: start,
+                        end: end
+                    },
+                    success: function (response) {
+                        var table_html = '<table border="1" id="complain_table" class="table"><thead><tr>' +
+                                '<th>Ticket ID</th>' +
+                                '<th>Request Date & Time</th>' +
+                                //'<th>Time</th>' +
+                                '<th>Account No.</th>' +
+                                '<th>Service Type</th>' +
+                                '<th>Status</th>' +
+                                '<th>Transaction ID</th>' +
+                                '<th>Transaction Date & Time</th>' +
+                                // '<th>View</th>' +
+                                '</tr></thead><tbody>';
+                        if (response.length > 0) {
+                            response.forEach(function (option) {
+
+                                if (option.status == 'New') {
+                                    color_class = "warning";
+                                } else if (option.status == 'Read') {
+                                    color_class = "active";
+                                } else if (option.status == 'Executed') {
+                                    color_class = "success";
+                                } else if (option.status == 'Not Executed') {
+                                    color_class = "danger";
+                                }
+//alert(option.time+ '  ' + option.date);
+                                var row = '<tr class="' + color_class + '">' +
+                                        '<td>' + option.serial + '</td>' +
+                                        '<td>' + option.date + '</td>' +
+                                        //'<td>'+option.time+'</td>'+
+                                        // '<td>'+option.account_no+'</td>'+
+                                        '<td><a href="/project/view-complain/' + option.view + '">' + option.account_no + '</a></td>' +
+                                        '<td>' + option.service_type + '</td>' +
+                                        '<td>' + option.status + '</td>' +
+                                        '<td>' + option.transaction_id + '</td>' +
+                                        '<td>' + option.tdate + '</td>' +
+                                        '</tr>';
+                                table_html += row;
+                            });
+                            table_html += '</tbody></table>';
+                            table.destroy();
+
+                            $("#complain_table_container").empty();
+                            $("#complain_table_container").append(table_html);
+                            table = $('#complain_table').DataTable({
+                                "columns": [
+                                    {"name": "Ticket ID", "orderable": false},
+                                    {"name": "Request Date & Time", "orderable": false},
+                                    {"name": "Account No.", "orderable": false},
+                                    {"name": "Service Type", "orderable": false},
+                                    {"name": "Status", "orderable": false},
+                                    {"name": "Transaction ID", "orderable": false},
+                                    {"name": "Transaction Date & Time", "orderable": false}
+                                ],
+                                "stateSave": false,
+
+                                "pageLength": 25
+                            });
+                        } else {
+                            $("#complain_table_container").empty();
+                        }
+                    }
+                    , error: function (response) {
+                        console.log("Error Occured");
+                    }
+                }); // end-ajax
+            }
+        }
+
+        $('#generate_report').on('click', function () {
+            ajaxcall();
+            table.destroy();
+            cnt_tbl.destroy();
+
+            var from_date = $('#datepicker1').val();
+            var to_date = $('#datepicker2').val();
+            var problem_type = $('#problem_type option:selected').val();
+            var branch = $('#branch option:selected').val();
+            var execution_status = $('#execution_status option:selected').val();
+
+            $.ajax({
+                url: '/project/getExecutedRequests/',
+                type: 'POST',
+                dataType: 'json',
+                data: {
+                      'from_date': from_date
+                    , 'to_date': to_date
+                    , 'problem_type': problem_type
+                    , 'branch': branch
+                    , 'execution_status': execution_status
+                },
+                beforeSend: function () {
+                },
+                success: function (result) {
+                    data = JSON.parse(result.data)
+                    var tbody = '';
+                    for (var idx in data) {
+                        tbody += '<tr><td>' + data[idx].ticket_id + '</td><td>' + data[idx].received_time + '</td><td><a href="/project/full_view_complain/' + data[idx].id + '">' + data[idx].account_no + '</a></td><td>' + data[idx].service_type + '</td><td>' + data[idx].execution_status + '</td><td>' + data[idx].sla + '</td><td>' + data[idx].transaction_id + '</td><td>' + data[idx].transaction_date_time + '</td></tr>';
+                    }
+                    $("#complain_table").find('tbody').html(tbody);
+                    table = datatable_reinitialize("complain_table");
+                    cnt_data = JSON.parse(result.cnt_data);
+                    var tbody = '';
+                    for (var idx in cnt_data) {
+                        tbody += '<tr><td>' + cnt_data[idx].cnt_correction + '</td><td>' + cnt_data[idx].cnt_solved + '</td><td>' + cnt_data[idx].cnt_closed + '</td><td>' + cnt_data[idx].total_solved + '</td></tr>';
+                    }
+                    $("#cnt_table").find('tbody').html(tbody);
+                    cnt_tbl  = datatable_reinitialize("cnt_table");
+                }
+            });
+
+
+        });
+
+        function datatable_reinitialize(table_name) {
+            if(table_name=='cnt_table')
+            return $('#'+table_name).DataTable({
+                "scrollX": true, "ordering": false,
+                dom: 'Bfrtip',"searching": false
+            });
+            else
+                return $('#'+table_name).DataTable({
+                "scrollX": true, "ordering": false,
+                dom: 'Bfrtip'
+            });
+        }
+
+        function ajaxcall() {
+            $.ajaxSetup({
+                beforeSend: function (xhr, settings) {
+                    function getCookie(name) {
+                        var cookieValue = null;
+                        if (document.cookie && document.cookie != '') {
+                            var cookies = document.cookie.split(';');
+                            for (var i = 0; i < cookies.length; i++) {
+                                var cookie = jQuery.trim(cookies[i]);
+                                // Does this cookie string begin with the name we want?
+                                if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                                    break;
+                                }
+                            }
+                        }
+                        return cookieValue;
+                    }
+
+                    if (!(/^http:.*/.test(settings.url) || /^https:.*/.test(settings.url))) {
+                        // Only send the token to relative URLs i.e. locally.
+                        xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
+                    }
+                }
+            });
+        }
+    </script>
+{% endblock %}

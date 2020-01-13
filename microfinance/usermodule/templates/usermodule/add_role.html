@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% block additional-headers %}
+    
+{% endblock %}
+
+{% block additional-javascript %}
+<!-- <script type="text/javascript" src="/static/js/organization_access.js"></script> -->
+{% endblock %}
+
+{% block content %}
+    <section id="data-view">
+        <h1>Role Management</h1>
+        <span class="span12">
+            <div class="data-table-container table table-striped table-hover">
+                {% if is_added_role %}
+                    <strong>Added Successfully!</strong>
+                {% else %}
+                    <strong>Add Role</strong><br />
+                    <form id="menu_form" method="post" action="/usermodule/add-role/">
+
+                        {% csrf_token %}
+
+                        <div class="row">
+                    <div class="col-md-3">
+               {{ role_form.as_p }}
+                        </div>
+                    </div>
+                        <!-- Provide a button to click to submit the form. -->
+                        <input type="submit" class="btn btn-primary btn-lg" name="submit" value="Save" />
+                    </form>
+                {% endif %}
+                <div style="clear: both;"></div>
+            </div>
+        </span>
+
+    </section>
+{% endblock %}

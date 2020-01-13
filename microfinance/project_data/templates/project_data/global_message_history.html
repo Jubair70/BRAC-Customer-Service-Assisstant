@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% block additional-headers %}
+    <style >
+    .data-table-container table {
+        clear: both;
+        display: table !important;
+        overflow-x: auto;
+        width: 98% !important;
+    }
+
+    .table th, .table td {
+        border: 1px solid #dddddd !important;
+        text-align:center;
+    }
+    </style>
+{% endblock %}
+
+{% block content %}
+<section id="data-view">
+    <!--<span class="span12">-->
+        <div class="data-table-container table table-striped table-hover">
+              {% if user.is_authenticated %}
+              <h1>Message History</h1>
+            
+                <form action="/project/send-global-message/">
+                    <input type="submit" style="Display:None" class="btn btn-success" value="Send New Notification">
+                </form>
+                <br>
+            
+                <table border="1" class="table">
+                  <tr>
+                    <th>Sender</th>
+                    <th>Message</th>
+                  </tr>
+                {% for notification in notifications %}
+                  <tr>
+                    <td>{{notification.sender.username}}</td>
+                    <td>{{notification.message}}</td>
+                  </tr>
+                {% endfor %}
+                </table>
+              {% else %}
+                You are not not logged in please <a href="/usermodule/login/">login</a>
+              {% endif %}
+              <div style="clear: both;"></div>
+        </div>
+        <div id="client-side-filter"></div>
+        <div style="float:left">    
+            <div id="main"></div>
+        </div>
+</section>
+{% endblock %}

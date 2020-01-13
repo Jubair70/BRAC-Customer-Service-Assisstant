@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+    {% block additional-headers %}
+        <style >
+        .data-table-container table {
+            clear: both;
+            display: table !important;
+            overflow-x: auto;
+            width: 98% !important;
+        }
+
+        .table th, .table td {
+            border: 1px solid #dddddd !important;
+        }
+    </style>
+    {% endblock %}
+    
+    {% block additional-javascript %}
+    
+    {% endblock %}
+    
+
+
+{% block content %}
+    <section id="data-view">
+        <h1>Organizations</h1>
+        {% if message %} 
+            <div class="alert alert-danger" role="alert">
+                {{message}}
+            </div>    
+        {% endif %}
+        
+            <table id="organizations-table" class="table" border="1" id="organization-list">
+              <tr>
+                <th style="text-align:center">Organization</th>
+              </tr>
+
+            {% for organization in all_organizations %}
+
+            <tr>
+                <td style="text-align:center"><a class="organization" org-name="{{ organization.oraganization }}" data-id="organization-{{ organization.id }}" href="/usermodule/user-role-map/{{ organization.id}}">{{ organization }}</a></td>
+            </tr>
+            {% endfor %}
+            </table>
+        
+    </section>
+{% endblock %}

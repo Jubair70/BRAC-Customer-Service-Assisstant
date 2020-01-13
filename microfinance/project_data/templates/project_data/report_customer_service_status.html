@@ -1,0 +1,282 @@
+{% extends 'base.html' %}
+{% block additional-headers %}
+    <style >
+    .data-table-container table {
+        clear: both;
+        display: table !important;
+        overflow-x: auto;
+        width: 98% !important;
+    }
+
+    .table th {
+        border: 1px solid #dddddd !important;
+        text-align:center;
+    }
+    .table td {
+        border: 1px solid #dddddd !important;
+        text-align:left;
+    }
+    .btn {
+    -moz-border-radius: 7px !important;
+    -webkit-border-radius: 7px !important;
+    border-radius: 7px !important;
+    }
+    </style>
+{% endblock %}
+
+{% block content %}
+<section id="data-view">
+    <!--<span class="span12">-->
+        <div class="row">
+              {% if user.is_authenticated %}
+              <h1>{{page_header}}</h1>
+                {% if admin %}
+                    <form action="/usermodule/register">
+                        <input type="submit" class="btn btn-success" value="Register User">
+                    </form>
+                    <br>
+                {% endif %}
+                
+                    
+                 <form id="report_form" method="POST" class="form-inline" action="/project/report/customer-service">
+                    {% csrf_token %}
+                    {% comment %}
+                    <div class="form-group">
+
+                    <label>Date Range</label>
+                    <div class="input-group input-daterange">
+                        <input type="text" id="datepicker1" name="start" class="datepicker">
+                        <span class="input-group-addon">to</span>
+                        <input type="text" id="datepicker2" name="end" class="datepicker">
+                    </div>
+                    </div>
+                    {% endcomment %}
+                    <div class="form-group">
+                    <label for="service_type">Service Type</label>
+                    <select class="form-control" id="service_type" name="service_type">
+                      <option value="custom">Select a service type</option>
+                      <option value="BAR">BAR</option>
+                      <option value="PIN RESET">PIN Reset</option>
+                        <option value="Transaction Confirmation">Transaction Confirmation</option>
+                      <option value="UNBAR">UNBAR</option>
+                    </select>
+                    </div>
+                    <div class="form-group">
+                    <label for="service_status">Status</label>
+                    <select class="form-control" id="status" name="status">
+                      <option value="custom">Select a Status</option>                      
+                      <option value="Executed">Executed</option>
+                      <option value="Not Executed">Not Executed</option>
+                      <option value="Escalated">Escalated</option>
+                    </select>
+                    </div>
+                    <div class="form-group">
+                    <label for="sel1">Branch</label>
+                    <select class="form-control" id="branch" name="branch">
+                    <option value="custom">Select a Branch</option>
+                    {% for branch in branches %}
+                    <option value="{{branch.id}}">{{branch.name}}</option>
+                    {% endfor %}
+                    </select>
+                    </div>
+                    <div class="form-group">
+                    <label for="region">Region</label>
+                    <select class="form-control" id="region" name="region">
+                    <option value="custom">Select a Region</option>
+                    {% for region in regions %}
+                    <option value="{{region.id}}">{{region.name}}</option>
+                    {% endfor %}
+                    </select>
+                    </div>
+                    {% comment %}
+                    <div class="form-group">
+                        <label for="brac_csa_agent_id">BRAC Agent</label>
+                        <select class="form-control" id="brac_csa_agent_id" name="brac_csa_agent_id">
+                          <option value="custom">Select an Agent</option>
+                          {% for brac_csa_user in brac_csa_users %}
+                          <option value="{{brac_csa_user.user.id}}">{{brac_csa_user.user.username}}</option>
+                          {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="bkash_exec_agent_id">bKash Agent</label>
+                        <select class="form-control" id="bkash_exec_agent_id" name="bkash_exec_agent_id">
+                          <option value="custom">Select an Agent</option>
+                          {% for bkash_exec_user in bkash_exec_users %}
+                          <option value="{{bkash_exec_user.user.id}}">{{bkash_exec_user.user.username}}</option>
+                          {% endfor %}
+                        </select>
+                    </div>
+                    {% endcomment %}
+                    <div class="form-group">
+                        <input type="hidden" name="export" value="export">
+                        <input type="submit" style="position:relative;left:10px;top:8px;" class="btn btn-lg btn-primary" onclick="filterDownload(event);" name="submit" value="Search" />
+                        <input type="submit" style="position:relative;left:10px;top:8px;" class="btn btn-lg btn-primary" name="export_trigger" value="Export" />
+                    </div>
+                </form>  
+                <br>
+                
+                <div id="report_container">
+                <table border="1" class="table" id="report_table">
+                  <thead>
+                  <tr>
+                    <!-- <th>Serial</th> -->
+                    <th>Token No.</th>
+                    <th>Region</th>
+                    <th>Branch Name</th>
+                    <th>Service Type</th>
+                    <th>Execution Status</th>
+                    <th>Not Execution Reason</th>
+                  </tr>
+                  </thead>
+                  <tbody>
+                {% for complain in complains %}
+                  <tr>
+                    <td>{{complain.token_no}}</td>
+                    <td>{{complain.region_name}}</td>
+                    <td>{{complain.branch_name}}</td>
+                    <td>{{complain.service_type}}</td>
+                    <td>{{complain.execution_status}}</td>
+                    <td>{{complain.not_execute_reason}}</td>
+                  </tr>
+                {% endfor %}
+                  </tbody>
+
+                </table>
+                </div>
+              {% else %}
+                You are not not logged in please <a href="/usermodule/login/">login</a>
+              {% endif %}
+              <div style="clear: both;"></div>
+        </div>
+        <div id="client-side-filter"></div>
+        <div style="float:left">    
+            <div id="main"></div>
+        </div>
+</section>
+{% endblock %}
+
+{% block additional-javascript %}
+<script type="text/javascript">
+$(document).ready(function(){
+    $('#datepicker1').datepicker({
+        endDate:'0d',
+        format: 'yyyy-mm-dd',
+        todayHighlight:true
+    });
+    $('#datepicker2').datepicker({
+        endDate:'0d',
+        format: 'yyyy-mm-dd',
+        todayHighlight:true
+    });
+    var oneWeekAgo = new Date();
+    var today = oneWeekAgo.getFullYear() + "-" + (oneWeekAgo.getMonth()+1) + "-" + oneWeekAgo.getDate();
+    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+    $("#datepicker1").datepicker("update", oneWeekAgo);
+    $("#datepicker2").datepicker("update", today);
+
+    table = $('#report_table').DataTable({
+        "pageLength": 25,
+	"searching": true,
+"columns": [
+	{"name": "Token No.", "orderable": false},
+	{"name": "Region", "orderable": false},
+	{"name": "Branch Name", "orderable": false},
+	{"name": "Service Type", "orderable": false},
+	{"name": "Execution Status", "orderable": false},
+	{"name": "Not Execution Reason", "orderable": false}
+	]
+    });
+    
+});
+
+function filterDownload(e, request_type)
+    {   
+        e.preventDefault();
+        var start = $('#datepicker1').val();
+        var end = $('#datepicker2').val();
+        var service_type = $('#service_type').val();
+        var bkash_exec_agent_id = $('#bkash_exec_agent_id').val();
+        var branch = $('#branch').val();
+        var status=$('#status').val();
+        var region = $('#region').val();
+
+        //console.log(service_type);
+        //console.log(brac_csa_agent_id);
+        //console.log(bkash_exec_agent_id);
+        color_class = '';
+        if (status == 'New') {
+            color_class = "warning";
+        }else if (status == 'Read') {
+            color_class = "active";
+        }else if (status == 'Executed') {
+            color_class = "success";
+        }else if (status == 'Not Executed') {
+            color_class = "danger";
+        }
+
+        //if (!start || !end) {
+          //alert("Both Dates must have value")
+        //}
+        var order = 'asc';
+        if ("{{page_header}}" == 'New Complain'){
+            order = 'asc';
+        }else {
+            order = 'desc';
+        }
+
+        if (request_type === 2) {
+            console.log('here')
+            $( "#report_form" ).submit();
+            console.log('there')
+        }else{
+
+        if (true ) {
+            $.ajax({
+                type: "POST",
+                url:"/project/report/customer-service",
+                data: {start:start, end:end, service_type:service_type,branch :branch,status:status,region:region,
+                 csrfmiddlewaretoken: '{{ csrf_token }}'
+            },
+                success: function(response){
+                    var table_html = '<table border="1" id="report_table" class="table"><thead><tr>' +
+                                      '<th>Token No.</th>' +
+                                      '<th>Region</th>' +
+                                      '<th>Branch Name</th>' +
+                                      '<th>Service Type</th>' +
+                                      '<th>Execution Status</th>' +
+                                      '<th>Not Execution Reason</th>' +                                      
+                                      '</tr></thead><tbody>';
+                    if (response.length > 0){
+                        response.forEach(function(option) {
+                            var row = '<tr>'+
+                                        '<td>'+option.token_no+'</td>'+
+                                        '<td>'+option.region_name+'</td>'+
+                                        '<td>'+option.branch_name+'</td>'+
+                                        '<td>'+option.service_type+'</td>'+
+                                        '<td>'+option.execution_status+'</td>'+
+                                        '<td>'+option.not_execute_reason+'</td>'+
+                                      '</tr>';
+                            table_html += row ;   
+                        });
+                        table_html += '</tbody></table>' ;
+                        table.destroy();
+                        $("#report_container").empty();
+                        $("#report_container").append(table_html);
+                        table = $('#report_table').DataTable({
+                            "pageLength": 25
+                        });
+                    }else{
+                        $("#report_container").empty();
+                    }
+                }
+,                error: function(response){
+                    console.log("Error Occured");
+                }
+            }); // end-ajax
+        }
+        }
+    }
+</script>
+
+{% endblock %}

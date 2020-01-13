@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% block content %}
+    <section id="data-view">
+        <h1>Add Orgaization</h1>
+        <span class="span12">
+            <div class="data-table-container table table-striped table-hover">
+                {% if is_added_organization %}
+                    <strong>Organization Added!</strong>
+                {% else %}
+                    <form id="user_form" method="post" action="/usermodule/add-organization/"
+                            enctype="multipart/form-data">
+
+                        {% csrf_token %}
+                         <div class="row">
+                    <div class="col-md-3">
+                {{ organization_form.as_p }}
+                        </div>
+                    </div>
+
+
+                        <!-- Provide a button to click to submit the form. -->
+                        <input type="submit" class="btn btn-primary btn-lg" name="submit" value="Save" />
+                    </form>
+                {% endif %}
+                <div style="clear: both;"></div>
+            </div>
+        </span>
+
+    </section>
+{% endblock %}
+
+

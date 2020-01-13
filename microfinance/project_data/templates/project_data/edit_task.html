@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+{% load i18n %}
+        {% block content %}
+        <section id="data-view">
+            <h1>Edit with User Module</h1>
+            {% if edited %}
+            <div class="alert alert-success" role="alert">
+                Menu editing is successful
+            </div>
+        
+            <form action="/usermodule/">
+                <input type="submit" class="btn btn-success" value="Return to Administration">
+            </form>
+            {% else %}
+            <strong>Edit your profile</strong><br />
+            <span class="span12">
+                <div class="data-table-container table table-striped table-hover">
+                    <form id="user_form" method="post" action="/project/edit-task/{{id}}/">
+                        {% csrf_token %}
+                        <!-- Display each form. The as_p method wraps each element in a paragraph
+                             (<p>) element. This ensures each element appears on a new line,
+                             making everything look neater. -->
+                        {{ task_form.as_p }}
+                        <!-- Provide a button to click to submit the form. -->
+                        <input type="submit"  class="btn btn-primary btn-lg" name="submit" value="Save" />
+                    </form>
+                    
+                    <div style="clear: both;"></div>
+                    <!-- <a href="/usermodule/change-password">Password Management</a><br /> -->
+                </div>
+            </span>
+            {% endif %}
+        </section>
+        {% endblock %}

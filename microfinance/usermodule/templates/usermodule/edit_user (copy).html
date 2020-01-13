@@ -1,0 +1,111 @@
+{% extends 'base.html' %}
+{% load i18n %}
+        {% block content %}
+        <section id="data-view">
+            <h1>General Account Settings</h1>
+            {% if edited %}
+            <div class="alert alert-success" role="alert">
+                Profile editing is successful
+            </div>
+        
+            <form action="/usermodule/">
+                <input type="submit" class="btn btn-success" value="Return to Administration">
+            </form>
+            {% else %}
+            <strong>Edit your profile</strong><br />
+            <span class="span12">
+                <div class="data-table-container table table-striped table-hover">
+                    <form id="user_form" method="post" action="/usermodule/edit/{{id}}/"
+                            enctype="multipart/form-data">
+                        <input type="hidden" name="userchange" value="userchange">
+                        {% csrf_token %}
+                        <!-- Display each form. The as_p method wraps each element in a paragraph
+                             (<p>) element. This ensures each element appears on a new line,
+                             making everything look neater. -->
+                        {{ user_form.as_p }}
+                        {{ profile_form.as_p }}
+                        <!-- Provide a button to click to submit the form. -->
+                        <input type="submit" class="btn btn-primary btn-lg" name="submit" value="Save" />
+                    </form>
+                    {% endif %}
+                    <div style="clear: both;"></div>
+                    <a href="/usermodule/change-password/?userid={{id}}">Password Management</a><br />
+                </div>
+            </span>
+        
+
+    <!-- Modal 
+    <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <h4 class="modal-title" id="myModalLabel">Modal title</h4>
+          </div>
+          <div class="modal-body">
+            
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            <button type="button" class="btn btn-primary">Save changes</button>
+          </div>
+        </div>
+      </div>
+    </div>    
+    -->
+    </section>
+{% endblock %}
+
+
+{% block additional-javascript %}
+<script type="text/javascript">
+$(document).ready(function(){
+var role_id = '{{js_role_id}}';  
+if( $('#id_account_type').val() !== role_id){
+      $("#id_branch" ).hide();
+      $("#id_branch").prop('disabled', true);
+      $("label[for='id_branch']").hide();
+      $( "#id_branch" ).prop('required',false);
+    } else {
+      $( "#id_branch" ).show();
+      $("#id_branch").prop('disabled', false);
+      $("label[for='id_branch']").show();
+      $( "#id_branch" ).prop('required',true);
+    }
+  // $("label[for='id_branch']").hide();
+  // $( "#id_branch" ).hide();
+  $( "#id_account_type" ).change(function() {
+    if( $('#id_account_type').val() !== role_id){
+      $("#id_branch").prop('disabled', true);
+      $( "#id_branch" ).hide();
+      $("label[for='id_branch']").hide();
+      $( "#id_branch" ).prop('required',false);
+    } else {
+      $("#id_branch").prop('disabled', false);
+      $( "#id_branch" ).show();
+      $("label[for='id_branch']").show();
+      $( "#id_branch" ).prop('required',true);
+    }
+  });
+});
+</script>    
+{% endblock %}
+
+{% block additional-headers %}
+    <style >
+    .data-table-container table {
+        clear: both;
+        display: table !important;
+        overflow-x: auto;
+        width: 98% !important;
+    }
+
+    .highlight { background-color: #D9EDF7; }
+
+    .table th, .table td {
+        border: 1px solid #dddddd !important;
+    }
+
+    </style>
+    
+{% endblock %}

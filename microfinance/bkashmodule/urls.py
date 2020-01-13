@@ -1,0 +1,30 @@
+from django.conf.urls import patterns, include, url
+from django.contrib import admin
+from bkashmodule import views,views_api
+
+urlpatterns = patterns('',
+    url(r'^$', views.index, name='index'),
+url(r'^comment_list/$', views.comment_list, name='comment_list'),
+url(r'^add_comment_form/$', views.add_comment_form, name='add_comment_form'),
+url(r'^insert_comment_form/$', views.insert_comment_form, name='insert_comment_form'),
+url(r'^edit_comment_form/(?P<comment_id>\d+)/$', views.edit_comment_form, name='edit_comment_form'),
+url(r'^delete_comment_form/(?P<comment_id>\d+)/$', views.delete_comment_form,name='delete_comment_form'),
+url(r'^update_comment_form/$', views.update_comment_form, name='update_comment_form'),
+url(r'^region_list/$', views.region_list, name='region_list'),
+url(r'^add_region_form/$', views.add_region_form, name='add_region_form'),
+url(r'^insert_region_form/$', views.insert_region_form, name='insert_region_form'),
+url(r'^edit_region_form/(?P<region_id>\d+)/$', views.edit_region_form, name='edit_region_form'),
+url(r'^delete_region_form/(?P<region_id>\d+)/$', views.delete_region_form,name='delete_region_form'),
+url(r'^update_region_form/$', views.update_region_form, name='update_region_form'),
+url(r'^report/services$', views.report_services, name='report_services'),
+url(r'^get_report_services/$', views.get_report_services, name='get_report_services'),
+url(r'^report/agents$', views.report_bkash_agents, name='report_bkash_agents'),
+url(r'^get_bkash_agents_report/$', views.get_bkash_agents_report, name='get_bkash_agents_report'),
+url(r'^report/activity$', views.report_bkash_activity, name='report_bkash_activity'),
+url(r'^get_bkash_activity_report/$', views.get_bkash_activity_report, name='get_bkash_activity_report'),
+url(r'^report/brac-agents-performance$', views.report_brac_performance, name='report_brac_performance'),
+url(r'^get_brac_performance_report/$', views.get_brac_performance_report, name='get_brac_performance_report'),
+url(r'^getBranches/$', views.getBranches, name='getBranches'),
+url(r'^report/account_rpt$', views.account_rpt, name='account_rpt'),
+url(r'^get_account_rpt/$', views.get_account_rpt, name='get_account_rpt'),
+    )

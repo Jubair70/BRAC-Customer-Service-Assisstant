@@ -1,0 +1,14 @@
+appdirs==1.4.3
+Django==1.9
+django-user-agents==0.3.0
+packaging==16.8
+paho-mqtt==1.2
+psycopg2==2.6.2
+pyparsing==2.2.0
+pytz==2016.7
+PyYAML==3.12
+six==1.10.0
+ua-parser==0.7.3
+user-agents==1.1.0
+xlwt==1.1.2
+

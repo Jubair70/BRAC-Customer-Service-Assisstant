@@ -1,0 +1,180 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% block content %}
+    <section id="data-view">
+            <h1>Sign Up</h1>
+            {% if registered %}
+            <div class="alert alert-success" role="alert">
+                Thank you for registering!
+            </div>
+        
+            <form action="/usermodule/">
+                <input type="submit" class="btn btn-success" value="Return to Administration">
+            </form>
+            {% else %}
+                    
+
+        <span class="span12">
+            <div class="data-table-container table table-striped table-hover">
+            
+                <form role="form" id="user_form" method="post" action="/usermodule/register/"
+                        enctype="multipart/form-data">
+
+                    {% csrf_token %}
+
+                    <!-- Display each form. The as_p method wraps each element in a paragraph
+                         (<p>) element. This ensures each element appears on a new line,
+                         making everything look neater. -->
+                    <!--id of label:: {{ user_form.username.id_for_label }}-->
+                    <!--Complete label:: {{user_form.username.label_tag}}-->
+                    <!--error for field:: {{ user_form.username.errors }}-->
+                    <!--field itself:: {{ user_form.username}}-->
+                    {{ user_form.as_table }}
+                    {{ profile_form.as_table }}
+                        
+                    {% comment %}
+                {% for field in user_form %}
+                    {% if field.errors %}
+                        <div class="form-group error">
+                            <label class="control-label">{{ field.label }}</label> 
+                            <div class="controls">{{ field }}
+                                <span class="help-inline">
+                                    {% for error in  field.errors %}{{ error }}{% endfor %}
+                                </span>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="form-group">
+                            <label class="control-label">{{ field.label }}</label> 
+                            <div class="controls">{{ field }}
+                                {% if field.help_text %}
+                                    <p class="help-inline"><small>{{ field.help_text }}</small></p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+                    {% endcomment %}
+                    <br>
+                    <!-- Provide a button to click to submit the form. -->
+                    <input type="submit" class="btn btn-primary btn-md" name="submit" value="Register" />
+                    <button onclick="history.go(-1);" style="margin-left:10px;" type="button" class="btn default" data-original-title="" title="">Cancel</button>
+                </form>
+            
+                {% endif %}
+                <div style="clear: both;"></div>
+            </div>
+        </span>
+
+    <!-- Modal 
+    <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <h4 class="modal-title" id="myModalLabel">Select PSU</h4>
+          </div>
+          <div class="modal-body">
+            
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            <button type="button" class="btn btn-primary">Save changes</button>
+          </div>
+        </div>
+      </div>
+    </div>    
+    -->
+    </section>
+{% endblock %}
+
+{% block additional-javascript %}
+<script type="text/javascript">
+$(document).ready(function(){
+var role_id = '{{js_role_id}}';
+if( $('#id_account_type').val() !== role_id){
+      $("#id_branch" ).hide();
+      $("#id_branch").prop('disabled', true);
+      $("label[for='id_branch']").hide();
+      $( "#id_branch" ).prop('required',false);
+
+      $("#id_region" ).hide();
+      $("#id_region").prop('disabled', true);
+      $("label[for='id_region']").hide();
+      $( "#id_region" ).prop('required',false);
+    } else {
+      $( "#id_branch" ).show();
+      $("#id_branch").prop('disabled', false);
+      $("label[for='id_branch']").show();
+      $( "#id_branch" ).prop('required',true);
+
+      $( "#id_region" ).show();
+      $("#id_region").prop('disabled', false);
+      $("label[for='id_region']").show();
+      $( "#id_region" ).prop('required',true);
+    }
+  $( "#id_account_type" ).change(function() {
+    if( $('#id_account_type').val() !== role_id){
+      $("#id_branch").prop('disabled', true);
+      $( "#id_branch" ).hide();
+      $("label[for='id_branch']").hide();
+      $( "#id_branch" ).prop('required',false);
+      $("#id_region").prop('disabled', true);
+      $( "#id_region" ).hide();
+      $("label[for='id_region']").hide();
+      $( "#id_region" ).prop('required',false);
+    } else {
+      $("#id_branch").prop('disabled', false);
+      $( "#id_branch" ).show();
+      $("label[for='id_branch']").show();
+      $( "#id_branch" ).prop('required',true);
+
+      $("#id_region").prop('disabled', false);
+      $( "#id_region" ).show();
+      $("label[for='id_region']").show();
+      $( "#id_region" ).prop('required',true);
+    }
+  });
+});
+
+$('#id_region').on('change',function () {
+
+    region = $('#id_region option:selected').val();
+   $.ajax({
+                url: '/usermodule/getBranches/',
+                data: {'region': region},
+                success: function (result) {
+                    $('#id_branch').html(result);
+                }
+            });
+});
+</script>
+{% endblock %}
+
+{% block additional-headers %}
+    <style >
+    .data-table-container table {
+        clear: both;
+        display: table !important;
+        overflow-x: auto;
+        width: 98% !important;
+    }
+
+    .highlight { background-color: #D9EDF7; }
+
+    .table th, .table td {
+        border: 1px solid #dddddd !important;
+    }
+
+    tr:hover {
+        background-color: #ffff99;
+    }
+
+    .errorlist
+    {
+        color: red;
+    }
+
+    </style>
+    
+{% endblock %}

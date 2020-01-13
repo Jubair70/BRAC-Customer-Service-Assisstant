@@ -1,0 +1,727 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% load app_filters %}
+
+{% block content %}
+    <div id="myModal" class="modal">
+        <span class="close">&times;</span>
+        <img class="modal-content" id="img01">
+        <div id="caption"></div>
+</div>
+   <!-- <meta http-equiv="refresh" content="100;url=http://localhost:8888/project/new-complain/" />-->
+    <section id="data-view">
+
+            <h1>Request Details</h1>
+	    <p><b><a href="#" style="font-size: 20px;" onclick="process(event)">Back</a>
+<!--<a href="#" style="font-size: 20px;" onclick="process(event)">Home</a>--></p></b>
+            {% if complain.locker %}
+            <div class="alert alert-danger" role="alert">
+                This Request is locked by {{complain.locker}}
+            </div>
+            {% endif %}
+             {% if curr_user_role != 'bKash CS Agent' %}
+                  <p><b><a href="#" style="font-size: 20px;" onclick="process(event)">Unlock</a>
+             {% endif %}
+
+            {% if registered %}
+            <div class="alert alert-success" role="alert">
+                Thank you for registering!
+            </div>
+        
+            <form action="/usermodule/">
+                <input type="submit" class="btn btn-success" value="Return to Administration">
+            </form>
+            {% else %}
+                <br>
+                <br>
+                <span>Request ID :  {{ complain.ticket_id | slice:":-2" }}</span><span style="padding-left: 300px">Ticket ID : {{ complain.ticket_id }}</span>
+{#                <span style="padding-left: 300px">Step : {% if complain.ticket_id %} {{ complain.ticket_id|endswith }} {% endif %}</span>#}
+        <span class="span12">
+            <div class="data-table-container table table-striped table-hover">
+                <table border="1" class="table">
+                <tr>
+                    <th style="text-align:left">Service Type</th>
+                    <td style="text-align:left">{{complain.service_type}}</td>
+                  </tr>
+                  <tr>
+                    <th style="text-align:left">Account No.</th>
+                    <td style="text-align:left">{{complain.account_no}}</td>
+                  </tr>
+                
+
+
+                  <tr>
+                    <th style="text-align:left">Account Name</th>
+                    <td style="text-align:left">{{complain.customer_name}}</td>
+                  </tr>
+                {% if complain.account_balance %}
+                <tr>
+                    <th style="text-align:left">Account Balance</th>
+                    <td style="text-align:left">{{ complain.account_balance }}</td>
+                  </tr>
+                    {% endif %}
+
+                {% if complain.id_no %}
+                  <tr>
+                    <th style="text-align:left">NID Number</th>
+                    <td style="text-align:left">{{complain.id_no}}</td>
+                  </tr>
+                {% endif %}
+
+                    {% if complain.transaction_type %}
+                  <tr>
+                    <th style="text-align:left">Transaction Type</th>
+                    <td style="text-align:left">{{complain.transaction_type}}</td>
+                  </tr>
+                  {% endif %}
+                {% if complain.transaction_amount %}
+                <tr>
+                    <th style="text-align:left">Transaction Amount</th>
+                    <td style="text-align:left">{{complain.transaction_amount}}</td>
+                  </tr>
+                     {% endif %}
+                 {% if complain.date_of_birth %}
+                <tr>
+                    <th style="text-align:left">Date of Birth</th>
+                    <td style="text-align:left">{{complain.date_of_birth | date:"d M Y" }}</td>
+                  </tr>
+                     {% endif %}
+
+                {% if complain.service_type == "New Registration" or complain.service_type == 'Information Update' or complain.service_type == 'Unbar' or complain.service_type == 'Pin Reset' or complain.service_type == 'Transaction Confirmation' %}
+
+
+                    <tr>
+                    <th style="text-align:left">NID Front</th>
+                    <td style="text-align:left"><img style="height: 250px;" src="{{ complain.nid_front }}" id="nid_front" alt="NID Front Side"></td>
+                </tr>
+                <tr>
+                    <th style="text-align:left">NID Back</th>
+                    <td style="text-align:left"><img style="height: 250px;" src="{{ complain.nid_back }}" id="nid_back" alt="NID Back Side"></td>
+                </tr>
+
+
+
+
+                    {% endif %}
+                {% if complain.kyc_front %}
+                <tr>
+                    <th style="text-align:left">KYC Front</th>
+                    <td style="text-align:left"><img style="height: 250px;" src="{{ complain.kyc_front }}" id="kyc_front" alt="KYC Front Side"></td>
+                </tr>
+                <tr>
+                    <th style="text-align:left">KYC Back</th>
+                    <td style="text-align:left"><img style="height: 250px;" src="{{ complain.kyc_back }}" id="kyc_back" alt="KYC Back Side"></td>
+                </tr>
+                <tr>
+                    <th style="text-align:left">NID Photocopy</th>
+                    <td style="text-align:left"><img style="height: 250px;" src="{{ complain.nid_copy }}" id="nid_photocopy" alt="NID Photocopy"></td>
+                </tr>
+                    {% endif %}
+                  {% if complain.service_type == 'Transaction Confirmation' %}
+                  <tr>
+                    <th style="text-align:left">Transaction ID</th>
+                    <td style="text-align:left">{{complain.transaction_id}}</td>
+                  </tr>
+                  
+                  <tr>
+                    <th style="text-align:left">Transaction Date &amp; Time</th>
+                    <td style="text-align:left">{{complain.transaction_date_time|date:"D d M Y H:i"}}</td>
+                  </tr>
+
+
+                  {% endif %}
+
+                  {% if complain.remarks_of_csa_customer %}
+                  <tr>
+                    <th style="text-align:left">Remarks of CSA/Customer</th>
+                    <td style="text-align:left">{{ complain.remarks_of_csa_customer  }}</td>
+                  </tr>
+                  {% endif %}
+                  {% if complain.note %}
+                    <tr>
+                    <th style="text-align:left">Instruction/Note</th>
+                    <td style="text-align:left">{{ complain.note  }}</td>
+                  </tr>
+                  {% endif %}
+                  {% if complain.comment_text %}
+                  <tr>
+                    <th style="text-align:left">Comment</th>
+                    <td style="text-align:left">{{ complain.comment_text  }}</td>
+                  </tr>
+                  {% endif %}
+                  {% if complain.other_comment %}
+                  <tr>
+                    <th style="text-align:left">Other Comment</th>
+                    <td style="text-align:left">{{ complain.other_comment  }}</td>
+                  </tr>
+                  {% endif %}
+                {% if complain.reason %}
+                  <tr>
+                    <th style="text-align:left">Reason</th>
+                    <td style="text-align:left">{{ complain.reason  }}</td>
+                  </tr>
+                  {% endif %}
+                {% if complain.escalate_to %}
+                    <tr>
+                    <th style="text-align:left">
+                        {% if complain.execution_status == 'Escalate' %}
+                            Escalate From
+                            {% elif complain.execution_status == 'Forward' %}
+                            Forward From
+                        {% endif %}
+                        </th>
+                    <td style="text-align:left">{{ reply_from  }}</td>
+                  </tr>
+                {% endif %}
+                {% if complain.barcode_number %}
+                  <tr>
+                    <th style="text-align:left">Barcode Number</th>
+                    <td style="text-align:left">{{ complain.barcode_number  }}</td>
+                  </tr>
+                  {% endif %}
+                {% if complain.remarks %}
+                  <tr>
+                    <th style="text-align:left">Remarks</th>
+                    <td style="text-align:left">{{ complain.remarks  }}</td>
+                  </tr>
+                  {% endif %}
+
+
+                </table>
+
+                {% if complain.ticket_id|endswith >= '2'  %}
+                <h3><strong>History</strong></h3>
+                <table class="table table-bordered table-condensed flip-content nowrap">
+                    <thead>
+                    <tr>
+                        <th>Ticket ID</th>
+                        <th>Action Status</th>
+                        <th>Comment</th>
+                        <th>Date</th>
+                        <th>Reply By</th>
+                    </tr>
+                 </thead>
+                <tbody>
+                {% for p in parent %}
+                    <tr>
+                        <td>{{ p.ticket_id }}</td>
+                        <td>{{ p.execution_status }}</td>
+                        <td>{{ p.comment_text }}</td>
+                        <td>{{ p.received_time }}</td>
+                        <td>{{ p.reply_by }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+
+
+
+
+                </table>
+
+                    {% endif %}
+                <div id="images" hidden>
+                {% if complain.nid_front %}<img style="height: 250px;" src="{{ complain.nid_front }}"  alt="NID Front Side">{% endif %}
+                {% if complain.nid_back %}<img style="height: 250px;" src="{{ complain.nid_back }}" alt="NID Back Side">{% endif %}
+                {% if complain.kyc_front %}<img style="height: 250px;" src="{{ complain.kyc_front }}"  alt="KYC Front Side">{% endif %}
+                {% if complain.kyc_back %}<img style="height: 250px;" src="{{ complain.kyc_back }}" alt="KYC Back Side">{% endif %}
+                {% if complain.nid_copy %}<img style="height: 250px;" src="{{ complain.nid_copy }}"  alt="NID Photocopy">{% endif %}
+                    </div>
+{#		{% if complain.execution_status != "Executed" and complain.execution_status != "Not Executed" and complain.execution_status != "Ticket Forward" %}#}
+                <form role="form" id="complain_form" method="post" action="/project/view-complain/{{id}}/">
+
+                    {% csrf_token %}
+{#                    {{ complain_form.as_table }}#}
+                    <br>
+                    <div class="row">
+                        <div class="col-md-5">
+                            <div class="form-group">
+                                <label >Status: </label>
+                                <select class="form-control" name="status" id="status" onclick="load_reference(this);load_comments(this);" required>
+                                        <option value="">Select One</option>
+                                        <option value="Solved">Solved</option>
+                                        <option value="Closed">Closed</option>
+                                      {% if role_id == 3 or role_id == 0 %}  <option value="Escalate">Escalate</option> {% endif %}
+                                {% if role_id == 4 or role_id == 0 %}  <option value="Forward">Forward</option> {% endif %}
+                                        <option value="Correction Needed">Correction Needed</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="escalate_block" hidden>
+                        <div class="row">
+                        <div class="col-md-5">
+                            <div class="form-group">
+                                <label id="escalate_label">Escalate/Forward To: </label>
+                                <select class="form-control" name="escalate" id="escalate"></select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-5">
+                            <div class="form-group">
+                                <label>Note/Instruction: </label>
+                                <input type="text" name="note" id="note">
+                            </div>
+                        </div>
+                    </div>
+
+                    </div>
+                    <div id="comment_block" hidden>
+                        <div class="row">
+                        <div class="col-md-5">
+                            <div class="form-group">
+                                <label >Comment: </label>
+                                <select multiple="multiple" class="form-control" name="comment" id="comment"></select>
+                            </div>
+                        </div>
+                    </div>
+                        <div class="row">
+                        <div class="col-md-5">
+                            <div class="form-group">
+                                <label>Other Comment: </label>
+                                <input type="text" name="other_comment" id="other_comment">
+                            </div>
+                        </div>
+                    </div>
+
+                    </div>
+
+                    <input type="button" class="btn btn-primary btn-lg" name="submit" value="Cancel" onclick="process(event)" />
+                    <input type="submit" class="btn btn-primary btn-lg" id="submit" name="submit" value="Save" />
+                    
+                </form>
+{#                {% endif %}#}
+            
+                {% endif %}
+                <div style="clear: both;"></div>
+            </div>
+        </span>
+
+    <!-- Modal 
+    <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <h4 class="modal-title" id="myModalLabel">Select PSU</h4>
+          </div>
+          <div class="modal-body">
+            
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            <button type="button" class="btn btn-primary">Save changes</button>
+          </div>
+        </div>
+      </div>
+    </div>    
+    -->
+    </section>
+
+{% endblock %}
+
+{% block additional-javascript %}
+
+    <script type="text/javascript" src="/static/scripts/bootstrap-multiselect.js"></script>
+    <script type="text/javascript" src="/static/scripts/viewer.js"></script>
+<script type="text/javascript">
+var zip = new JSZip();
+zip.file("Hello.txt", "Hello World\n");
+var img = zip.folder("images");
+img.file("smile.gif", imgData, {base64: true});
+zip.generateAsync({type:"blob"})
+.then(function(content) {
+    // see FileSaver.js
+    saveAs(content, "example.zip");
+});
+
+
+$(document).ready(function(){
+  if ($('#id_execution_status').length ){
+    // For users who have complain status change permission
+    if( $('#id_execution_status').val() === 'Executed'){
+      $( "#id_not_execute_reason" ).hide();
+      $("label[for='id_not_execute_reason']").hide();
+    }else if( $('#id_execution_status').val() === 'Not Executed'){
+      $( "#id_not_execute_reason" ).hide();
+      $("label[for='id_not_execute_reason']").hide();
+    }
+
+    else{
+      $( "#id_not_execute_reason" ).hide();
+      $("label[for='id_not_execute_reason']").hide();
+    }
+  }else{
+    // For users who do not have complain status change permission
+    var table_execution_status = "{{complain.execution_status}}";
+    if( table_execution_status === 'Executed'){
+      $( "#id_not_execute_reason" ).hide();
+      $("label[for='id_not_execute_reason']").hide();
+    }else if( $('#id_execution_status').val() === 'Not Executed'){
+      $( "#id_not_execute_reason" ).show();
+      $("label[for='id_not_execute_reason']").show();
+    }
+  }
+
+  // For users who have complain status change permission, triggers on dropdown change
+  $( "#id_execution_status" ).change(function() {
+    //alert('here');
+    if( $('#id_execution_status').val() === 'Executed'){
+      $( "#id_not_execute_reason" ).hide();
+      $("label[for='id_not_execute_reason']").hide();
+    }else if( $('#id_execution_status').val() === 'Not Executed'){
+      $( "#id_not_execute_reason" ).show();
+      $("label[for='id_not_execute_reason']").show();
+    }
+    else{
+      $( "#id_not_execute_reason" ).hide();
+      $("label[for='id_not_execute_reason']").hide();
+    }
+  });
+});
+
+$("#comment").multiselect({
+            enableFiltering: true,
+            //filterBehavior: 'value',
+            enableCaseInsensitiveFiltering: true,
+            maxHeight: 200,
+            numberDisplayed: 1,
+            includeSelectAllOption: true,
+            buttonWidth: '100%'
+        });
+
+var given_sla_time = parseInt({{ given_sla_time | safe }});
+console.log(given_sla_time)
+
+setInterval(function auto_process() {
+  //e.preventDefault();
+  console.log("{{complain.id}}/{{request.user.id}}");
+  window.location.href = "/project/unlock-complain/{{complain.id}}/{{request.user.id}}/";
+}, given_sla_time);
+
+function process(e) {
+  e.preventDefault();
+  console.log("{{complain.id}}/{{request.user.id}}");
+  window.location.href = "/project/unlock-complain/{{complain.id}}/{{request.user.id}}/";
+}
+
+
+function ajaxcall() {
+            $.ajaxSetup({
+                beforeSend: function (xhr, settings) {
+                    function getCookie(name) {
+                        var cookieValue = null;
+                        if (document.cookie && document.cookie != '') {
+                            var cookies = document.cookie.split(';');
+                            for (var i = 0; i < cookies.length; i++) {
+                                var cookie = jQuery.trim(cookies[i]);
+                                // Does this cookie string begin with the name we want?
+                                if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                                    break;
+                                }
+                            }
+                        }
+                        return cookieValue;
+                    }
+
+                    if (!(/^http:.*/.test(settings.url) || /^https:.*/.test(settings.url))) {
+                        // Only send the token to relative URLs i.e. locally.
+                        xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
+                    }
+                }
+            });
+        }
+
+{#        load_reference("");#}
+
+
+        function load_reference(obj) {
+            ajaxcall();
+            $('#note').val("");
+            dist = obj.value;
+            if (dist !="Escalate" && dist != "Forward") {
+                $('#escalate_block').hide();
+                $('#escalate').html("<option value=\"\">Select One</option>");
+            }
+            else {
+                $('#escalate_block').show();
+                if (dist == 'Escalate')
+                {
+                    role_id = 4
+                }
+                else if (dist=='Forward')
+                {
+                    role_id = 3
+                }
+                $.ajax({
+                    url: '/project/getAgents/',
+                    type: 'POST',
+                    dataType: 'json',
+                    data: {'role_id': role_id},
+                    success: function (result) {
+                        var html_code = "<option value=\"\">Select One</option>";
+                        for (i = 0; i < result.length; i++) {
+                            html_code += "<option value=\"" + result[i].user_id + "\"> " + result[i].username + "</option>";
+                        }
+                        $('#escalate').html(html_code);
+                    }
+                });
+            }
+        }
+
+function load_comments(obj) {
+            ajaxcall();
+            dist = obj.value;
+            if(dist == 'Solved' || dist == 'Closed' || dist == 'Correction Needed')
+            {
+                $('#comment_block').show()
+                service_type  = '{{ complain.service_type }}';
+            $.ajax({
+                    url: '/project/getComments/',
+                    type: 'POST',
+                    dataType: 'json',
+                    data: {'dist': dist,'service_type':service_type},
+                    success: function (result) {
+                        $('#comment').multiselect('destroy');
+                    $("#comment").multiselect({
+                        enableFiltering: true,
+                        //filterBehavior: 'value',
+                        enableCaseInsensitiveFiltering: true,
+{#                        maxHeight: 200,#}
+                        numberDisplayed: 1,
+                        includeSelectAllOption: true,
+                        buttonWidth: '100%'
+                    });
+                    $('#comment').multiselect('dataprovider', result);
+
+{#                        var html_code = "<option value=\"\">Select One</option>";#}
+{#                        for (i = 0; i < result.length; i++) {#}
+{#                            html_code += "<option value=\"" + result[i].id + "\"> " + result[i].comment_text + "</option>";#}
+{#                        }#}
+{#                        $('#comment').html(html_code);#}
+
+
+                    }
+                });
+            }
+            else $('#comment_block').hide();
+
+        }
+
+        $('#submit').on('click',function () {
+           execution_status = $('#status option:selected').val();
+           escalate = $('#escalate option:selected').val();
+           note = $('#note').val();
+           comment = $('#comment').val();
+
+
+           other_comment = $('#other_comment').val();
+
+           if(execution_status=='Solved' || execution_status=='Closed' || execution_status=='Correction Needed')
+           {
+                if(comment == null)
+                {
+                    alert("Comment Must be selected");
+                    return false;
+                }
+                return true
+           }
+           else if (execution_status=='Escalate' || execution_status=='Forward')
+           {
+                if(escalate=='')
+                    return false
+               return true
+           }
+           return false;
+        });
+
+
+        // Get the modal
+{#var modal = document.getElementById('myModal');#}
+
+// Get the image and insert it inside the modal - use its "alt" text as a caption
+var nid_front = document.getElementById('nid_front');
+var nid_back = document.getElementById('nid_back');
+var kyc_front = document.getElementById('kyc_front');
+var kyc_back = document.getElementById('kyc_back');
+var nid_photocopy = document.getElementById('nid_photocopy');
+{#var modalImg = document.getElementById("img01");#}
+{#var captionText = document.getElementById("caption");#}
+
+var images = document.getElementById("images");
+const gallery = new Viewer(images);
+
+{% if complain.nid_front %}
+nid_front.onclick = function () {
+gallery.view(0);
+};{% endif %}
+{% if complain.nid_back %}
+nid_back.onclick = function () {
+gallery.view(1);
+};{% endif %}
+{% if complain.kyc_front %}
+kyc_front.onclick = function () {
+gallery.view(2);
+};{% endif %}
+{% if complain.kyc_back %}
+kyc_back.onclick = function () {
+gallery.view(3);
+};{% endif %}
+{% if complain.nid_copy %}
+nid_photocopy.onclick = function () {
+gallery.view(4);
+};{% endif %}
+
+
+
+
+
+{#new Viewer(nid_back);#}
+{# {% if complain.nid_front %}#}
+{#nid_front.onclick = function(){#}
+{#  modal.style.display = "block";#}
+{#  modalImg.src = this.src;#}
+{#  captionText.innerHTML = this.alt;#}
+{#};#}
+{##}
+{#nid_back.onclick = function(){#}
+{#  modal.style.display = "block";#}
+{#  modalImg.src = this.src;#}
+{#  captionText.innerHTML = this.alt;#}
+{#};#}
+{#{% endif %}#}
+{##}
+{# {% if complain.kyc_front %}#}
+{#kyc_front.onclick = function(){#}
+{#  modal.style.display = "block";#}
+{#  modalImg.src = this.src;#}
+{#  captionText.innerHTML = this.alt;#}
+{#};#}
+{##}
+{#kyc_back.onclick = function(){#}
+{#  modal.style.display = "block";#}
+{#  modalImg.src = this.src;#}
+{#  captionText.innerHTML = this.alt;#}
+{#}#}
+{#nid_photocopy.onclick = function(){#}
+{#  modal.style.display = "block";#}
+{#  modalImg.src = this.src;#}
+{#  captionText.innerHTML = this.alt;#}
+{#};#}
+{#{% endif %}#}
+
+{#window.onhashchange = function() {#}
+{# console.log("back");#}
+{# return false;#}
+{##}
+{#}#}
+
+
+// When the user clicks on <span> (x), close the modal
+{#modal.onclick = function() {#}
+{#  modal.style.display = "none";#}
+{#}#}
+</script>
+{% endblock additional-javascript %}
+
+{% block additional-headers %}
+    <link rel="stylesheet" type="text/css" href="/static/css/bootstrap-multiselect.css">
+    <link  href="/static/css/viewer.css" type="text/css" rel="stylesheet">
+    <style >
+.multiselect-container>li>a>label.radio, .multiselect-container>li>a>label.checkbox
+{
+        margin: 0 0 0px 36px;
+
+}
+    .data-table-container table {
+        clear: both;
+        display: table !important;
+        overflow-x: auto;
+        width: 98% !important;
+    }
+
+
+    .highlight { background-color: #D9EDF7; }
+
+    .table th, .table td {
+        border: 1px solid #dddddd !important;
+    }
+
+    tr:hover {
+        background-color: #ffff99;
+    }
+
+
+       #nid_front {
+  border-radius: 5px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+ #nid_front:hover,#nid_back:hover,
+ #kyc_front:hover,#kyc_back:hover,
+ #nid_photocopy:hover{opacity: 0.7;}
+
+    /* The Modal (background) */
+.modal {
+  display: none; /* Hidden by default */
+  position: fixed; /* Stay in place */
+  z-index: 1; /* Sit on top */
+  padding-top: 100px; /* Location of the box */
+  left: 0;
+  top: 0;
+  width: 100%; /* Full width */
+  height: 100%; /* Full height */
+  overflow: auto; /* Enable scroll if needed */
+  background-color: rgb(0,0,0); /* Fallback color */
+  background-color: rgba(0,0,0,0.9); /* Black w/ opacity */
+}
+
+/* Modal Content (image) */
+.modal-content {
+  margin: auto;
+  display: block;
+  width: 80%;
+  max-width: 700px;
+}
+
+/* Caption of Modal Image */
+#caption {
+  margin: auto;
+  display: block;
+  width: 80%;
+  max-width: 700px;
+  text-align: center;
+  color: #ccc;
+  padding: 10px 0;
+  height: 150px;
+}
+
+/* Add Animation */
+.modal-content, #caption {
+  -webkit-animation-name: zoom;
+  -webkit-animation-duration: 0.6s;
+  animation-name: zoom;
+  animation-duration: 0.6s;
+}
+
+@-webkit-keyframes zoom {
+  from {-webkit-transform:scale(0)}
+  to {-webkit-transform:scale(1)}
+}
+
+@keyframes zoom {
+  from {transform:scale(0)}
+  to {transform:scale(1)}
+}
+
+
+/* 100% Image Width on Smaller Screens */
+@media only screen and (max-width: 700px){
+  .modal-content {
+    width: 100%;
+  }
+}
+    </style>
+    
+{% endblock %}

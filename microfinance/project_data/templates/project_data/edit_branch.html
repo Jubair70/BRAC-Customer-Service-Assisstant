@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% block content %}
+<section id="data-view">
+    <h1>Branch Management</h1>
+    {% if edited %}
+    <div class="alert alert-success" role="alert">
+        Menu editing is successful
+    </div>
+
+    <form action="/usermodule/">
+        <input type="submit" class="btn btn-success" value="Return to Administration">
+    </form>
+    {% else %}
+    <strong>Edit your profile</strong><br />
+    <span class="span12">
+        <div class="data-table-container table table-striped table-hover">
+            <form id="user_form" method="post" action="/project/edit-branch/{{id}}/">
+                {% csrf_token %}
+                 <div class="row">
+                    <div class="col-md-3">
+               {{ branch_form.as_p }}
+                        </div>
+                    </div>
+
+                <input type="submit"  class="btn btn-primary btn-lg" name="submit" value="Save" />
+            </form>
+            <div style="clear: both;"></div>
+        </div>
+    </span>
+    {% endif %}
+</section>
+{% endblock %}
+{% block additional-headers %}
+    <style >
+
+.errorlist
+    {
+        color: red;
+    }
+    </style>
+
+{% endblock %}

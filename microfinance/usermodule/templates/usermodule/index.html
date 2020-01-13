@@ -1,0 +1,155 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% load app_filters %}
+    {% block additional-headers %}
+        <style >
+{#        .data-table-container table {#}
+{#            clear: both;#}
+{#            display: table !important;#}
+{#            overflow-x: auto;#}
+{#            width: 98% !important;#}
+{#        }#}
+{##}
+{#        .table th, .table td {#}
+{#            border: 1px solid #dddddd !important;#}
+{#        }#}
+        </style>
+
+
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.10.16/css/jquery.dataTables.min.css">
+    <link href="https://cdn.datatables.net/buttons/1.4.2/css/buttons.dataTables.min.css" rel="stylesheet">
+
+{#        <link href="/static/bower_components/backgrid/lib/backgrid.min.css" rel="stylesheet">#}
+{#        <link rel="stylesheet" href="/static/bower_components/backgrid-filter/backgrid-filter.min.css" />#}
+{#        <link rel="stylesheet" href="/static/bower_components/backgrid-paginator/backgrid-paginator.min.css" />#}
+{#        <link href="/static/css/data_view.css" rel="stylesheet">#}
+{#        <link href="/static/css/backbone-ui-min.css" rel="stylesheet">#}
+{#        <link href="/static/css/bootstrap-datetimepicker.min.css" rel="stylesheet">#}
+
+    {% endblock %}
+
+     {% block content %}
+        <section id="data-view">
+            <!--<span class="span12">-->
+                <div class="data-table-container table table-striped table-hover">
+                      {% if user.is_authenticated %}
+                      <h1>User list</h1>
+                        {% if success %}
+                        <div class="alert alert-success" role="alert">
+                            Your Request was successful!
+                        </div>
+                        {% endif %}
+                        {% if admin %}
+                            <form action="/usermodule/register">
+                                <input type="submit" class="btn btn-success" value="Register User">
+                            </form>
+                            <br>
+                        {% endif %}
+                          <div class="row">
+                           <div class="col-md-12">
+                                <table class="table table-bordered table-striped table-condensed flip-content" id="user_table">
+                            <thead>
+                          <tr>
+                            <th style="text-align:center">Username</th>
+                            <th style="text-align:center">Branch</th>
+                            <th style="text-align:center">Email</th>
+                          <th style="text-align:center">Status</th>
+                            <th style="text-align:center">Edit</th>
+{#                            <th style="text-align:center">Delete</th>#}
+                            {% if admin %}
+                            <th style="text-align:center">Reset Password</th>
+                            {% endif %}
+                          </tr>
+                            </thead>
+                          <tbody>
+                          {% for user in users %}
+
+                          <tr>
+                            <td style="text-align:center">{{user.user.username}}</td>
+                            <td style="text-align:center">{{user.branch |default_if_none:""}}</td>
+                            <td style="text-align:center">{{user.user.email |default_if_none:""}}</td>
+                          <td style="text-align:center">{% if user.user.is_active %} Active {% else %} Inactive {% endif %}</td>
+                            <td style="text-align:center"><a href="/usermodule/edit/{{user.user.id}}"><i class="fa fa-pencil-square-o"></i></a></td>
+{#                            <td style="text-align:center"><a href="#" data-href="/usermodule/delete/{{user.user.id}}" data-toggle="modal" data-target="#confirm-delete" class="delete-user-item" ><i class="fa fa-trash-o"></i></a></td>#}
+                            {% if admin %}
+                            <td style="text-align:center"><a href="/usermodule/reset-password/{{user.user.id}}"><i class="fa fa-cog"></i></a></td>
+                            {% endif %}
+                          </tr>
+                        {% endfor %}
+                          </tbody>
+
+
+                        </table>
+                           </div>
+
+                          </div>
+
+                      {% else %}
+                        You are not not logged in please <a href="/usermodule/login/">login</a>
+                      {% endif %}
+                      <div style="clear: both;"></div>
+                </div>
+                <div id="client-side-filter"></div>
+                <div style="float:left">    
+                    <div id="main"></div>
+                </div>
+        </section>
+
+        <div class="modal fade" id="confirm-delete" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                        <h4 class="modal-title" id="myModalLabel">Confirm Delete</h4>
+                    </div>
+                
+                    <div class="modal-body">
+                        <p>You are about to delete a user, this procedure is irreversible.</p>
+                        <p>Do you want to proceed?</p>
+                        <p class="debug-url"></p>
+                    </div>
+                    
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                        <a href="#" class="btn btn-danger btn-ok">Delete</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% endblock %}
+		
+		{% block additional-javascript %}
+
+    <script type="text/javascript" src="https://cdn.datatables.net/1.10.16/js/jquery.dataTables.min.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/buttons/1.4.2/js/dataTables.buttons.min.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/buttons/1.4.2/js/buttons.flash.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.32/pdfmake.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.32/vfs_fonts.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/buttons/1.4.2/js/buttons.html5.min.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/buttons/1.4.2/js/buttons.print.min.js"></script>
+        <script>
+            $('.delete-user-item').on('click', function(e) {
+                var criteria_id = $(this).attr("data-href");
+                $('.btn-ok').attr("href",criteria_id);
+            });
+
+            $('#user_table').DataTable({
+                // set the initial value
+                "scrollX": true, "ordering": false,"iDisplayLength": 50,
+            });
+
+{#            $('#user_table_wrapper .dataTables_filter input').addClass("form-control input-medium"); // modify table search input#}
+{#            $('#user_table_wrapper .dataTables_length select').addClass("form-control input-xsmall"); // modify table per page dropdown#}
+
+            if ($('.alert-block').is(':visible')) {
+            window.setTimeout(function () {
+                    $(".alert-success").fadeTo(1500, 0).slideUp(500, function () {
+                        $(this).remove();
+                    });
+                }, 5000);
+            }
+        </script>
+        {% endblock %}
